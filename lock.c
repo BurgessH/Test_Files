@@ -229,7 +229,7 @@ void Lock_Invalid_Perform(void)
 	Get_SlotCard_Write(0);
 }
 
-void Lock_SlotCard_Perform(void)
+void Lock_Valid_Perform(void)
 {
 	/* IG下电， 锁供电*/
 	Leds_Display(PowerRelay, 		PIN_LOW);
@@ -341,10 +341,10 @@ static void lock_mode_check_perfrom(void)
 
 
 //执行当前状态对应的函数：默认状态Init
-void lock_work_all_perform(void)
+static void lock_work_all_perform(void)
 {
 	uint8_t i;
-	
+
 	for(i=0; i<sizeof(lock_work_perform)/sizeof(lock_work_perform[0]); i++)
 	{
 		if(g_car_work == lock_work_perform[i].work_mode)	
@@ -355,11 +355,17 @@ void lock_work_all_perform(void)
 //				g_car_work_old = g_car_work;			
 //			}
 			
-			lock_work_perform[i].ctrlLoop(); 			
-														
-			lock_mode_check_perfrom();				
-	
+			lock_work_perform[i].ctrlLoop(); 
+
 			break;
 		}
 	}	
+}
+
+
+
+void lock_status_perform(void)
+{
+	lock_mode_check_perfrom();
+	lock_work_all_perform();
 }
