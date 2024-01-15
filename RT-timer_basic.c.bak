@@ -20,7 +20,9 @@ struct rt_timer
 };
 typedef struct rt_timer *rt_timer_t;
 
+
   rt_timer_check()
+
 
 
 1. rt_timer_create()创建定时器时根据定时器flag,放入rt_soft_timer_list,rt_hard_timer_list,;

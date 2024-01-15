@@ -39,7 +39,7 @@ typedef struct vehicle_state
 {
 	uint8_t lock_status;			/* 锁状态*/
 	uint8_t verify_status;
-	
+	uint8_t short_flag;
 	
 	
 	
@@ -93,18 +93,19 @@ uint8_t nfc_cnt_compare(uint8_t *buf)
 /* 校验  */
 void nfc_data_verify(void)
 {
-	/* 有刷卡动作 */
-	if(Get_SlotCard_Read() == 1)
+	/* 有效刷卡动作完成 */
+	if(Get_SlotCard_Read() == 1 && vehicle_state.short_flag == 0)
 	{
 		/* NFC数据解码  */
 		Des_Unifold(NFC_buffer, Key, Encode_buff);
 		
 		/* 数据校验 */
 		status.verify_status = nfc_cnt_compare(Encode_buff);
-	}
-	else
-	{
-		status.verify_status = 0;
+
+		if(status.verify_status == 1)
+		{
+			vehicle_state.short_flag = 1;
+		}
 	}
 }
 
@@ -218,7 +219,7 @@ lock_check_state lock_check_perform[] =
 	{Lock_Time_Delay, 	Lock_Time_Delay_Check,  Lock_Time_Delay},
 	
 	{Lock_Response, 	Lock_Invalid_Check,  	Lock_Invalid},
-	{Lock_Response, 	Lock_Valid_Check,  	Lock_SlotCard},
+	{Lock_Response, 	Lock_Valid_Check,  		Lock_SlotCard},
 };
 
 
@@ -282,24 +283,18 @@ void Lock_Response_Perform(void)
 		
 		hal_pwm_enabled(PWM0_CHANNEL11, HAL_DISABLE);
 
-		BCM_Lock_Status.sig.Lock	= 0;
+		vehicle_state.short_flag 	= 0;           
+		vehicle_state.lock_status	= 1;
 		
-		//更新IG电源状态
-//		BCM_msg.sig.NFC_PowerDown 	= 1;
-//		BCM_msg.sig.NFC_PowerUp 	= 0;
 	}
 	//上锁反馈失败
 	else
 	{
 		//NFC 上锁失败标志
-		
+		vehicle_state.short_flag 	= 0;
+		vehicle_state.lock_status	= 1;
+
 		Get_SlotCard_Write(0);
-		
-		
-		//4.更新电源状态：NFC上电闭锁失败
-//		BCM_msg.sig.NFC_PowerDown 	= 0;
-//		BCM_msg.sig.NFC_PowerUp 	= 0;		
-		
 	}
 }
 
