@@ -40,9 +40,6 @@ typedef struct vehicle_state
 	uint8_t lock_status;			/* 锁状态*/
 	uint8_t verify_status;
 	uint8_t short_flag;
-	
-	
-	
 }vehicle_state;
 
 vehicle_state status  ;
@@ -274,21 +271,18 @@ void Lock_Response_Perform(void)
 	
 	/* 上锁反馈成功 */
 	if((Botton_get_information(Lock) == 0)&&(Botton_get_information(Unlock) == 1))
-	{
-//		BCM_msg.sig.NFC_Power 		= 0;
-//		
-		Get_SlotCard_Write(0);
-		
+	{	
 		hal_pwm_enabled(PWM0_CHANNEL11, HAL_DISABLE);          
-		vehicle_state.lock_status	= 0;
-		
+		status.lock_status			= 1;
+		status.verify_status		= 0;
+		Get_SlotCard_Write(0);
 	}
 	//上锁反馈失败
 	else
 	{
 		//NFC 上锁失败标志
-		vehicle_state.lock_status	= 0;
-
+		status.lock_status			= 0;
+		status.verify_status		= 0;
 		Get_SlotCard_Write(0);
 	}
 }
