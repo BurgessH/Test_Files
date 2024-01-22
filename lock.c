@@ -47,7 +47,7 @@ typedef struct vehicle_state
 
 vehicle_state status  ;
 
-/* 刷卡计数值 */
+/* NFCflag 计数值 */
 uint32_t nfc_data_cnt(uint8_t *buf)
 {
     uint32_t num   = 0;
@@ -94,18 +94,17 @@ uint8_t nfc_cnt_compare(uint8_t *buf)
 void nfc_data_verify(void)
 {
 	/* 有效刷卡动作完成 */
-	if(Get_SlotCard_Read() == 1 && vehicle_state.short_flag == 0)
+	if(Get_SlotCard_Read() == 1 && vehicle_state.verify_status == 0)
 	{
 		/* NFC数据解码  */
 		Des_Unifold(NFC_buffer, Key, Encode_buff);
 		
-		/* 数据校验 */
+		/* 数据校验 NFCflag */
 		status.verify_status = nfc_cnt_compare(Encode_buff);
-
-		if(status.verify_status == 1)
-		{
-			vehicle_state.short_flag = 1;
-		}
+	}
+	else
+	{
+		status.verify_status = 0;
 	}
 }
 
@@ -116,7 +115,7 @@ void nfc_data_verify(void)
 /*锁控无效状态检测*/
 static bool Lock_Invalid_Check(void) 
 {
-	/* 未刷卡、或者刷卡校验错误 */
+	/* 不合法卡片 */
 	if(status.verify_status == VERFILY_UNSUCCESS)
 	{
 		return true;
@@ -127,13 +126,12 @@ static bool Lock_Invalid_Check(void)
 	}
 }
 
-/* 数据校验合法 */
+/* 上电状态 */
 static bool Lock_Valid_Check(void)
 {
-	/* 闭锁条件判断 */
-	if(status.verify_status == VERFILY_SUCCESS)&&((Botton_get_information(Power) == 0x01))&&()&&())
+	if(status.verify_status == VERFILY_SUCCESS)&&((Botton_get_information(Power) == 0x01)))
 	{
-
+		return true;
 	}
 	else
 	{
@@ -281,18 +279,15 @@ void Lock_Response_Perform(void)
 //		
 		Get_SlotCard_Write(0);
 		
-		hal_pwm_enabled(PWM0_CHANNEL11, HAL_DISABLE);
-
-		vehicle_state.short_flag 	= 0;           
-		vehicle_state.lock_status	= 1;
+		hal_pwm_enabled(PWM0_CHANNEL11, HAL_DISABLE);          
+		vehicle_state.lock_status	= 0;
 		
 	}
 	//上锁反馈失败
 	else
 	{
 		//NFC 上锁失败标志
-		vehicle_state.short_flag 	= 0;
-		vehicle_state.lock_status	= 1;
+		vehicle_state.lock_status	= 0;
 
 		Get_SlotCard_Write(0);
 	}
