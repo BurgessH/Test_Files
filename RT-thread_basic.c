@@ -41,32 +41,31 @@
             
         2.4.找出第一个需要执行的线程：根据优先级的高低找到一个最高优先级的链表，void rt_schedule(void)
 			/*找到优先级最高的线程*/
-            highest_ready_priority = (number << 3) + __rt_ffs(rt_thread_ready_table[number]) - 1;
+           highest_ready_priority = __rt_ffs(rt_thread_ready_priority_group) - 1;
 			
-            highest_priority_thread = rt_list_entry(rt_thread_priority_table[highest_ready_priority].next, struct rt_thread, tlist);
+            to_thread = rt_list_entry(rt_thread_priority_table[highest_ready_priority].next, struct rt_thread, tlist);
 			
             rt_current_thread = to_thread;
 
             rt_hw_context_switch_interrupt((rt_ubase_t)&from_thread->sp, (rt_ubase_t)&Vto_thread->sp);
-			
+			 rt_hw_context_switch_to((rt_uint32_t)&to_thread->sp);
 			
 异常处理过程：
     3.中断现场恢复PendSV:       
             2.5.保存现场：
-				硬件自动保存A部分现场-异常栈帧；
+				硬件自动保存A部分现场-也就是异常栈帧；
 				软件保存其他寄存器；r4-r11
 
             2.6..恢复现场：
                 软件恢复: SP指向线程的栈,将栈保存的信息写入各个寄存器 r4-r11, PSP->r1
                 BxLR_bit2 触发硬件的中断返回时: PSP, 中断返回时，硬件自动恢复异常栈帧；
 
-
-
     4.线程挂起与恢复
-            1.A从就绪链表中移除 rt_schedule(void);
-            2.C恢复A, rt_thread_resume(), 放入就绪链表, rt_schedule(void);
-            3.休眠 A rt_thread_dalay(): A从就绪链表中移除, 启动A本身定时器,rt_schedule(void);
-            4.超时函数:A放入就绪链表,触发一次调度;
+            1.B运行时挂起A：把A从就绪链表中移除->rt_thread_suspend();
+			2.A挂起自己： 从就绪链表中移除->rt_schedule(void);
+            3.C恢复A, rt_thread_resume(), 放入就绪链表->rt_schedule(void);
+            3.休眠 A rt_thread_dalay(): A从就绪链表中移除, 启动A本身定时器,rt_schedule(void);超时处理函数，重新放入就绪链表->触发一次调度rt_schedule(void)；
+
 
 
 

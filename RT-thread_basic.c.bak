@@ -24,7 +24,7 @@
 
 
 
-2.启动第一个线程：
+2.启动第一个线程： rt_system_scheduler_start()
 
     1.线程运行一段时间（初始tick、剩下tick）
    
@@ -51,22 +51,21 @@
 			
 			
 异常处理过程：
-    3.中断现场恢复PendSV:    rt_system_scheduler_start()    
+    3.中断现场恢复PendSV:       
             2.5.保存现场：
-				硬件自动保存A部分现场-异常栈帧；
+				硬件自动保存A部分现场-也就是异常栈帧；
 				软件保存其他寄存器；r4-r11
 
             2.6..恢复现场：
                 软件恢复: SP指向线程的栈,将栈保存的信息写入各个寄存器 r4-r11, PSP->r1
                 BxLR_bit2 触发硬件的中断返回时: PSP, 中断返回时，硬件自动恢复异常栈帧；
 
-
-
     4.线程挂起与恢复
-            1.A从就绪链表中移除 rt_schedule(void);
-            2.C恢复A, rt_thread_resume(), 放入就绪链表, rt_schedule(void);
-            3.休眠 A rt_thread_dalay(): A从就绪链表中移除, 启动A本身定时器,rt_schedule(void);
-            4.超时函数:A放入就绪链表,触发一次调度;
+            1.B运行时挂起A：把A从就绪链表中移除->rt_thread_suspend();
+			2.A挂起自己： 从就绪链表中移除->rt_schedule(void);
+            3.C恢复A, rt_thread_resume(), 放入就绪链表->rt_schedule(void);
+            3.休眠 A rt_thread_dalay(): A从就绪链表中移除, 启动A本身定时器,rt_schedule(void);超时处理函数，重新放入就绪链表->触发一次调度rt_schedule(void)；
+
 
 
 
