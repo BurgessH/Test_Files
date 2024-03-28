@@ -24,7 +24,7 @@
 
 
 
-2.启动第一个线程： rt_system_scheduler_start()
+2.启动第一个线程：
 
     1.线程运行一段时间（初始tick、剩下tick）
    
@@ -51,7 +51,7 @@
 			
 			
 异常处理过程：
-    3.中断现场恢复PendSV:       
+    3.中断现场恢复PendSV:    rt_system_scheduler_start()    
             2.5.保存现场：
 				硬件自动保存A部分现场-异常栈帧；
 				软件保存其他寄存器；r4-r11
